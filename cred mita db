@@ -1,0 +1,312 @@
+create database cred_mitra_sample;
+
+\c cred_mitra_sample;
+
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+create table IF NOT EXISTS customer_detail (
+	cid uuid DEFAULT uuid_generate_v4() primary key, 
+	pan_no varchar(10) unique not null, 
+	dob date not null, 
+	name varchar(20) not null, 
+	father_or_husband varchar(50) not null, 
+	address varchar(100) not null, 
+	pincode int not null, 
+	gender varchar(10) not null, 
+	phone_no varchar(15) not null, 
+	email_id varchar(20) not null, 
+	ckyc varchar(50)
+);
+
+create table IF NOT EXISTS customer_emp_detail (
+	cid uuid not null unique,
+	emp_type varchar(20), 
+	annual_profit bigint, 
+	gross_sal bigint, 
+	constraint fk_customer foreign key(cid) references customer_detail(cid) on delete cascade
+);
+
+create table IF NOT EXISTS customer_bank_detail (
+	cid uuid not null unique,
+	account_number varchar(20) not null, 
+	IFSC varchar(15) not null, 
+	credit_score int, 
+	constraint fk_customer foreign key(cid) references customer_detail(cid) on delete cascade
+);
+
+create table IF NOT EXISTS employee_detail (
+	emp_id uuid DEFAULT uuid_generate_v4() primary key, 
+	username varchar(20) unique not null, 
+	emp_name varchar(20) not null,
+	emp_designation varchar(20) not null,
+	password varchar(30) not null
+);
+
+create table IF NOT EXISTS loan_detail (
+	loan_id uuid DEFAULT uuid_generate_v4() primary key,
+	application_id varchar(20) unique not null, 
+	loan_type varchar(20) not null, 
+	applicants_count int not null, 
+	amount numeric(10,2) not null, 
+	tenure int not null, 
+	roi numeric(4,2) not null, 
+	bank_name varchar(50) not null, 
+	emi_amount numeric(10,2) not null, 
+	processing_fee numeric(9,2) not null, 
+	other_charges numeric(9,2) not null, 
+	date_of_lead date not null, 
+	status varchar(10) not null, 
+	emp_id uuid not null, 
+	affilate_id varchar(20), 
+	emi_date date not null,
+	constraint fk_employee foreign key(emp_id) references employee_detail(emp_id)
+);
+
+create table IF NOT EXISTS mortgage_detail (
+	loan_id uuid unique not null, 
+	property_type varchar(20) not null, 
+	pincode int not null,
+	value bigint not null,
+	foreign key(loan_id) references loan_detail(loan_id) on delete cascade
+);
+
+create table IF NOT EXISTS customer_loans (
+	loan_id uuid not null, 
+	cid uuid not null, 
+	foreign key(loan_id) references loan_detail(loan_id) on delete cascade, 
+	foreign key(cid) references customer_detail(cid) on delete cascade
+);
+
+create table IF NOT EXISTS investments_detail (
+	inv_id uuid DEFAULT uuid_generate_v4() primary key,
+	cid uuid not null, 
+	type varchar(20) not null,
+	amount numeric(10,2) not null,
+	bank_mf varchar(20) not null,
+	status varchar(20) not null,
+	doi date not null,
+	emp_id uuid not null,
+	affilate_id varchar(20) ,
+	foreign key(cid) references customer_detail(cid) on delete cascade,
+	foreign key(emp_id) references employee_detail(emp_id)
+);
+
+create table IF NOT EXISTS insurance_detail(
+	ins_id uuid DEFAULT uuid_generate_v4() primary key,
+	cid uuid not null, 
+	type varchar(20) not null,
+	amount numeric(10,2) not null,
+	insurer varchar(20) not null,
+	status varchar(20) not null,
+	doi date not null,
+	emp_id uuid not null,
+	affilate_id varchar(20) ,
+	foreign key(cid) references customer_detail(cid) on delete cascade,
+	foreign key(emp_id) references employee_detail(emp_id)
+);
+
+create table IF NOT EXISTS property_detail(
+	prop_id uuid DEFAULT uuid_generate_v4() primary key,
+	cid uuid not null,
+	loan_id uuid not null,
+	sale_value bigint not null,
+	sale_status varchar(10) not null,
+	date_of_lead date not null,
+	project_name varchar(30) not null,
+	emp_id uuid not null,
+	foreign key(cid) references customer_detail(cid) on delete cascade,
+	foreign key(emp_id) references employee_detail(emp_id),
+	foreign key(loan_id) references loan_detail(loan_id)
+);
+
+
+
+
+
+
+
+create table IF NOT EXISTS dhanmitra_detail (
+	dmid uuid DEFAULT uuid_generate_v4() primary key, 
+	pan_no varchar(10) unique not null, 
+	dob date not null, 
+	name varchar(20) not null, 
+	address varchar(100) not null, 
+	pincode int not null, 
+	gender varchar(10) not null, 
+	phone_no varchar(15) not null, 
+	email_id varchar(20) not null, 
+	incorporation varchar(10) not null,
+	referal_code varchar(50) unique not null,
+	onboard date not null,
+	ckyc varchar(50)
+);
+
+alter table 
+	loan_detail 
+add column 
+	dm_referal varchar(50) 
+references 
+	dhanmitra_detail(referal_code);
+
+alter table 
+	dhanmitra_detail
+add column 
+	dmid_referal varchar(50) 
+references 
+	dhanmitra_detail(referal_code);
+
+create table IF NOT EXISTS dm_bank_detail (
+	dmid uuid not null unique,
+	account_number varchar(20) not null, 
+	IFSC varchar(15) not null, 
+	account_type varchar(10) not null,
+	foreign key(dmid) references dhanmitra_detail(dmid) on delete cascade
+);
+
+create table IF NOT EXISTS dhansarathi_detail (
+	dsid uuid DEFAULT uuid_generate_v4() primary key, 
+	pan_no varchar(10) unique not null, 
+	dob date not null, 
+	name varchar(20) not null, 
+	address varchar(100) not null, 
+	pincode int not null, 
+	gender varchar(10) not null, 
+	phone_no varchar(15) not null, 
+	email_id varchar(20) not null, 
+	incorporation varchar(10) not null,
+	referal_code varchar(50) unique not null,
+	onboard date not null,
+	ckyc varchar(50),
+
+);
+
+alter table 
+	dhansarathi_detail
+add column 
+	dsid_referal varchar(50)
+references 
+	dhansarathi_detail(referal_code);
+
+alter table 
+	dhanmitra_detail
+add column 
+	dsid_referal varchar(50)
+references 
+	dhansarathi_detail(referal_code);
+
+create table IF NOT EXISTS ds_bank_detail (
+	dsid uuid not null unique,
+	account_number varchar(20) not null, 
+	IFSC varchar(15) not null, 
+	account_type varchar(10) not null,
+	foreign key(dsid) references dhansarathi_detail(dsid) on delete cascade
+);
+
+create table IF NOT EXISTS developer_detail(
+	dev_id uuid DEFAULT uuid_generate_v4() primary key,
+	name varchar(20) not null,
+	address varchar(50) not null,
+	city varchar(30) not null,
+	state varchar(20) not null,
+	pincode int not null,
+	email varchar(30) not null,
+	status varchar(10) not null,
+	onboard date not null,
+	referal_code varchar(50) unique not null
+);
+
+alter table 
+	loan_detail 
+add column 
+	dev_referal varchar(50) 
+references 
+	developer_detail(referal_code);
+
+create table IF NOT EXISTS dev_bank_detail (
+	dev_id uuid not null unique,
+	name varchar(20),
+	account_number varchar(20) not null, 
+	IFSC varchar(15) not null, 
+	foreign key(dev_id) references developer_detail(dev_id) on delete cascade
+);
+
+alter table 
+	property_detail 
+add column 
+	dev_id uuid 
+references developer_detail(dev_id);
+
+create table IF NOT EXISTS project_details(
+	proj_id uuid DEFAULT uuid_generate_v4() primary key,
+	rera_id varchar(30),
+	name varchar(20) not null,
+	address varchar(50) not null,
+	state varchar(20) not null,
+	city varchar(20) not null,
+	pincode int not null,
+	dev_id uuid not null,
+	foreign key(dev_id) references developer_detail(dev_id)
+);
+
+alter table 
+	property_detail 
+add column 
+	proj_id uuid 
+references project_details(proj_id);
+
+create table IF NOT EXISTS proj_typo(
+	tid uuid DEFAULT uuid_generate_v4() primary key,
+	typography varchar(20) not null,
+	carpet_area int not null,
+	saleable_area int not null,
+	cost numeric(10,2) not null,
+	proj_id uuid not null,
+	foreign key(proj_id) references project_details(proj_id) on delete cascade
+);
+
+create table IF NOT EXISTS dm_commission(
+	com_id uuid DEFAULT uuid_generate_v4() primary key,
+	amount numeric(10,2) DEFAULT 0,
+	trans_date date not null,
+	trans_time time not null,
+	trans_id varchar(30) not null,
+	dmid uuid not null,
+	loan_id uuid not null,
+	foreign key(dmid) references dhanmitra_detail(dmid) on delete cascade,
+	foreign key(loan_id) references loan_detail(loan_id) 
+);
+
+create table IF NOT EXISTS ds_commission(
+	com_id uuid DEFAULT uuid_generate_v4() primary key,
+	amount numeric(10,2) DEFAULT 0,
+	trans_date date not null,
+	trans_time time not null,
+	trans_id varchar(30) not null,
+	dsid uuid not null,
+	dmid uuid not null,
+	foreign key(dmid) references dhanmitra_detail(dmid),
+	foreign key(dsid) references loan_detail(loan_id) on delete cascade
+);
+
+create table IF NOT EXISTS dev_commission(
+	com_id uuid DEFAULT uuid_generate_v4() primary key,
+	amount numeric(10,2) DEFAULT 0,
+	trans_date date not null,
+	trans_time time not null,
+	trans_id varchar(30) not null,
+	dev_id uuid not null,
+	loan_id uuid not null,
+	foreign key(dev_id) references developer_detail(dev_id) on delete cascade,
+	foreign key(loan_id) references loan_detail(loan_id) 
+);
+
+create table IF NOT EXISTS bank_detail(
+	bank_id uuid DEFAULT uuid_generate_v4() primary key,
+	name varchar(20) not null,
+	GSTIN varchar(15) not null,
+	spoc_name varchar(20) not null,
+	spoc_mobile_no varchar(12) not null,
+	spoc_email varchar(20) not null,
+	reg_address varchar(50) not null,
+	aggrement_date date not null
+);
